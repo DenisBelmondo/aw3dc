@@ -16,6 +16,8 @@ static Texture wall_texture;
 static Material wall_material;
 static Image gun_image;
 static Texture gun_texture;
+static const Color COLOR_CEILING = {57, 57, 57, 255};
+static const Color COLOR_FLOOR = {115, 115, 115, 255};
 
 // game
 static const EntClass ENT_CLASS_PLAYER = {
@@ -169,8 +171,8 @@ int main(void) {
         cam.target = Vector3Add(cam.position, (Vector3){ent_dir.x, 0, ent_dir.y});
 
         BeginDrawing();
-            DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight() / 2, DARKGRAY);
-            DrawRectangle(0, GetRenderHeight() / 2, GetRenderWidth(), GetRenderHeight() / 2, GRAY);
+            DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight() / 2, COLOR_CEILING);
+            DrawRectangle(0, GetRenderHeight() / 2, GetRenderWidth(), GetRenderHeight() / 2, COLOR_FLOOR);
             BeginMode3D(cam);
                 for (int y = 0; y < 10; y++) {
                     for (int x = 0; x < 10; x++) {

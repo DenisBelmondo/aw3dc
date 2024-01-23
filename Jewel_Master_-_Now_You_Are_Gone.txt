@@ -1,0 +1,32 @@
+Added by: Daylon Camarena 
+Date Added: 2017-11-04
+
+File URL is http://www.vgmusic.com/new-files/Jewel_Master_-_Now_You_Are_Gone.mid
+Upload Date and Time: 02/03/2011 15:41:22
+
+Uploaded by:  (Txai)
+
+Game System: Sega Genesis
+Game Name: Jewel Master
+Song Title: Now You're Gone
+Sequenced by: Txai
+Other Information: 
+
+-MIDI Header Information-
+MIDI Type: 1
+Number of Tracks: 12
+Delta Time Setting: 96
+
+
+-Midi TrackName Analysis-
+saw
+saw 2
+square
+ep
+ep 2
+ep 3
+oboe
+clarinet
+flute
+bass
+drums
