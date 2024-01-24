@@ -18,6 +18,7 @@ struct Ent {
     Vector2 pos;
     float yaw;
     float rad;
+    int broad_phase_handle;
 };
 
 Vector2 ent_get_dir(Ent ent);
