@@ -1,8 +1,9 @@
 #ifndef ENT_H
 #define ENT_H
 
-#include <raymath.h>
+#include <raylib.h>
 #include "tile_map.h"
+#include "xform.h"
 
 struct Ent;
 typedef struct Ent Ent;
@@ -15,12 +16,11 @@ struct Ent {
     struct Ent *next;
     const EntClass *cls;
     const TileMap *tile_map;
-    Vector2 pos;
-    float yaw;
+    Texture *texture;
+    int frame;
+    XForm xform;
     float rad;
     int broad_phase_handle;
 };
-
-Vector2 ent_get_dir(Ent ent);
 
 #endif /* ENT_H */

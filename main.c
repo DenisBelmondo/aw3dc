@@ -37,15 +37,15 @@ static TileMap tile_map = {
         1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-        1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
-        1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1,
-        1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-        1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+        1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1,
+        1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1,
+        1, 1, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+        1, 1, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
@@ -79,30 +79,35 @@ void player_tick(Ent *ent, double delta) {
     strafe_axis /= 5.0F;
     look_axis /= 7.5F;
 
-    Vector2 ent_dir = ent_get_dir(*ent);
+    Vector2 ent_dir = get_dir(ent->xform);
     Vector2 strafe_dir = perp2(ent_dir);
 
-    ent->yaw += look_axis;
+    ent->xform.yaw += look_axis;
 
-    Vector2 pos_prev = ent->pos;
-    Vector2 pos_new = ent->pos;
+    Vector2 pos_prev = ent->xform.pos;
+    Vector2 pos_new = pos_prev;
 
     pos_new = Vector2Add(pos_new, Vector2Scale(ent_dir, forward_axis));
     pos_new = Vector2Add(pos_new, Vector2Scale(strafe_dir, strafe_axis));
 
-    int tile = tile_map_get(*ent->tile_map, pos_new.x, pos_prev.y);
+    Vector2 move_vec = Vector2Subtract(pos_new, pos_prev);
 
-    if (tile) {
-        pos_new.x = pos_prev.x;
+    ent->xform.pos.x = pos_new.x;
+    if (tile_map_get(*ent->tile_map, ent->xform.pos.x, ent->xform.pos.y)) {
+        if (move_vec.x > 0) {
+            ent->xform.pos.x = (int)ent->xform.pos.x - 0.01;
+        } else if (move_vec.x < 0) {
+            ent->xform.pos.x = (int)ent->xform.pos.x + 1;
+        }
     }
-
-    tile = tile_map_get(*ent->tile_map, pos_prev.x, pos_new.y);
-
-    if (tile) {
-        pos_new.y = pos_prev.y;
+    ent->xform.pos.y = pos_new.y;
+    if (tile_map_get(*ent->tile_map, ent->xform.pos.x, ent->xform.pos.y)) {
+        if (move_vec.y > 0) {
+            ent->xform.pos.y = (int)ent->xform.pos.y - 0.01;
+        } else if (move_vec.y < 0) {
+            ent->xform.pos.y = (int)ent->xform.pos.y + 1;
+        }
     }
-
-    ent->pos = pos_new;
 }
 
 void tick(double delta) {
@@ -145,7 +150,7 @@ int main(void) {
         goto close_window;
     }
 
-    err = play_midi_from_file("LOTW_Dungeon1.mid", true);
+    err = play_midi_from_file("dd2-mission5.mid", true);
 
     if (err) {
         goto close_window;
@@ -156,7 +161,7 @@ int main(void) {
     ImageFlipVertical(&wall_image);
     wall_texture = LoadTextureFromImage(wall_image);
     wall_model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wall_texture;
-    gun_image = LoadImage("valta-0.png");
+    gun_image = LoadImage("walther.png");
     gun_texture = LoadTextureFromImage(gun_image);
     guard_image = LoadImage("pguard_s_1.png");
     guard_texture = LoadTextureFromImage(guard_image);
@@ -168,13 +173,13 @@ int main(void) {
     head = calloc(1, sizeof(Ent));
     head->cls = &ENT_CLASS_PLAYER;
     head->rad = 0.5F;
-    head->pos = (Vector2){5, 5};
+    head->xform.pos = (Vector2){5, 5};
     head->tile_map = &tile_map;
 
     Ent *guard = calloc(1, sizeof(Ent));
     guard->cls = &ENT_CLASS_GUARD;
     guard->rad = 0.5F;
-    guard->pos = (Vector2){4, 4};
+    guard->xform.pos = (Vector2){4, 4};
     guard->tile_map = &tile_map;
     head->next = guard;
 
@@ -199,9 +204,9 @@ int main(void) {
 
         ClearBackground(BLACK);
 
-        Vector2 ent_dir = ent_get_dir(*head);
+        Vector2 ent_dir = get_dir(head->xform);
 
-        cam.position = (Vector3){head->pos.x, 0, head->pos.y};
+        cam.position = (Vector3){head->xform.pos.x, 0, head->xform.pos.y};
         cam.target = Vector3Add(cam.position, (Vector3){ent_dir.x, 0, ent_dir.y});
 
         BeginDrawing();
@@ -219,12 +224,15 @@ int main(void) {
 
                 for (Ent *ent = head; ent; ent = ent->next) {
                     if (ent->cls == &ENT_CLASS_GUARD) {
-                        DrawBillboard(cam, guard_texture, (Vector3){ent->pos.x, 0, ent->pos.y}, 1, WHITE);
+                        DrawBillboard(cam, guard_texture, (Vector3){ent->xform.pos.x, 0, ent->xform.pos.y}, 1, WHITE);
                     }
                 }
             EndMode3D();
             float gun_texture_scale = (float)GetRenderHeight() / gun_image.height;
-            DrawTexturePro(gun_texture, (Rectangle){0, 0, 64, 64}, (Rectangle){(float)GetRenderWidth() / 2 - gun_image.width * gun_texture_scale / 2.0F, 0, GetRenderHeight(), GetRenderHeight()}, (Vector2){0}, 0, WHITE);
+            static const int gun_frame_width = 64;
+            static const int gun_frame_height = 64;
+            static const int gun_frame_idx = 0;
+            DrawTexturePro(gun_texture, (Rectangle){gun_frame_idx * gun_frame_width, 0, gun_frame_width, gun_frame_height}, (Rectangle){(float)GetRenderWidth() / 2 - gun_frame_width * gun_texture_scale / 2.0F, 0, GetRenderHeight(), GetRenderHeight()}, (Vector2){0}, 0, WHITE);
         EndDrawing();
     }
 
