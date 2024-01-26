@@ -77,3 +77,11 @@ int tile_map_cast(TileMap tile_map, Vector2 origin, Vector2 dir, Vector2 *out_in
 
     return 0;
 }
+
+// void tile_map_get_rect(TileMap tile_map, Rectangle rect, int max_num_out_tiles, int *out_tiles, int out_num_tiles) {
+//     for (int y = rect.y; y < rect.y + rect.height; y++) {
+//         for (int x = rect.x; x < rect.x + rect.width; x++) {
+//             int result = tile_map_get(tile_map, x, y);
+//         }
+//     }
+// }
