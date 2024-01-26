@@ -1,32 +1,27 @@
 #include <raylib.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "audio.h"
 #include "ent.h"
+#include "monsters.h"
 #include "player.h"
+#include "res_man.h"
 #include "tile_map.h"
 
 // engine
-static const double TICK_RATE = 1.0 / 30.0;
-static Model wall_model;
-static Image wall_image;
-static Texture wall_texture;
-static Material wall_material;
-static Image gun_image;
-static Texture gun_texture;
-static Image guard_image;
-static Texture guard_texture;
-static const Color COLOR_CEILING = {57, 57, 57, 255};
-static const Color COLOR_FLOOR = {115, 115, 115, 255};
+const double TICK_RATE = 1.0 / 30.0;
+Model wall_model;
+Image wall_image;
+Texture wall_texture;
+Material wall_material;
+Image gun_image;
+Texture gun_texture;
+const Color COLOR_CEILING = {57, 57, 57, 255};
+const Color COLOR_FLOOR = {115, 115, 115, 255};
 
 // game
 
-static const EntClass ENT_CLASS_GUARD = {
-    NULL,
-};
-
 // world
-static TileMap tile_map = {
+TileMap tile_map = {
     (int[]){
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -52,10 +47,10 @@ static TileMap tile_map = {
     20, // pitch
 };
 
-static Ent *head;
+Ent *head;
 
 // render
-static Camera3D cam = {
+Camera3D cam = {
     {0},                // pos
     {1, 0, 0},          // target
     {0, 1, 0},          // up
@@ -65,8 +60,8 @@ static Camera3D cam = {
 
 void tick(double delta) {
     for (Ent *ent = head; ent; ent = ent->next) {
-        if (ent->cls && ent->cls->tick) {
-            ent->cls->tick(ent, delta);
+        if (ent->thinker.tick) {
+            ent->thinker.tick(ent, delta);
         }
     }
 }
@@ -97,13 +92,19 @@ int main(void) {
 
     int err = 0;
 
+    err = res_man_init();
+
+    if (err) {
+        goto close_window;
+    }
+
     err = audio_init();
 
     if (err) {
         goto close_window;
     }
 
-    err = play_midi_from_file("music/Jewel_Master_-_Now_You_Are_Gone.mid", true);
+    err = play_midi_from_file("music/MAJMIN.wlf", true);
 
     if (err) {
         goto close_window;
@@ -116,22 +117,19 @@ int main(void) {
     wall_model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wall_texture;
     gun_image = LoadImage("walther.png");
     gun_texture = LoadTextureFromImage(gun_image);
-    guard_image = LoadImage("pguard_s_1.png");
-    guard_texture = LoadTextureFromImage(guard_image);
 
     //
     // world init
     //
 
     head = calloc(1, sizeof(Ent));
-    head->cls = &ENT_CLASS_PLAYER;
+    head->thinker = THINKER_PLAYER;
     head->rad = 0.5F;
     head->xform.pos = (Vector2){5, 5};
     head->tile_map = &tile_map;
 
     Ent *guard = calloc(1, sizeof(Ent));
-    guard->cls = &ENT_CLASS_GUARD;
-    guard->rad = 0.5F;
+    guard_init(guard);
     guard->xform.pos = (Vector2){4, 4};
     guard->tile_map = &tile_map;
     head->next = guard;
@@ -176,8 +174,8 @@ int main(void) {
                 }
 
                 for (Ent *ent = head; ent; ent = ent->next) {
-                    if (ent->cls == &ENT_CLASS_GUARD) {
-                        DrawBillboard(cam, guard_texture, (Vector3){ent->xform.pos.x, 0, ent->xform.pos.y}, 1, WHITE);
+                    if (ent->drawer.draw) {
+                        ent->drawer.draw(cam, ent, elapsed);
                     }
                 }
             EndMode3D();
@@ -192,8 +190,6 @@ int main(void) {
     UnloadMaterial(wall_material);
     UnloadTexture(wall_texture);
     UnloadImage(wall_image);
-    UnloadTexture(guard_texture);
-    UnloadImage(guard_image);
     UnloadTexture(gun_texture);
     UnloadImage(gun_image);
 

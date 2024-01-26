@@ -2,7 +2,7 @@ CC := cc
 CFLAGS := -xc -g -O0 -std=c99 -Wall -Wextra -Wpedantic
 INC := -I$(ADLMIDI_INCLUDE)
 LIBS := -L$(ADLMIDI_LIBPATH) -lraylib -lADLMIDI
-SRCS := audio.c ent.c main.c player.c tile_map.c util.c xform.c
+SRCS := audio.c ent.c main.c monsters.c player.c res_man.c tile_map.c util.c xform.c
 
 all:
 	@echo -----------------------------------------------------------------------------------

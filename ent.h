@@ -2,25 +2,24 @@
 #define ENT_H
 
 #include <raylib.h>
+#include "drawer.h"
+#include "thinker.h"
 #include "tile_map.h"
 #include "xform.h"
 
 struct Ent;
 typedef struct Ent Ent;
 
-typedef struct EntClass {
-    void (*tick)(Ent*, double);
-} EntClass;
-
 struct Ent {
     struct Ent *next;
-    const EntClass *cls;
     const TileMap *tile_map;
     Texture *texture;
     int frame;
     XForm xform;
     float rad;
     int broad_phase_handle;
+    Thinker thinker;
+    Drawer drawer;
 };
 
 #endif /* ENT_H */

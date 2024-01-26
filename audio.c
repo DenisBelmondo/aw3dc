@@ -5,13 +5,13 @@
 
 #define MAX_SAMPLES_PER_UPDATE 4096
 
-static struct ADL_MIDIPlayer *midi_player;
-static struct ADLMIDI_AudioFormat adl_audio_format = {
+struct ADL_MIDIPlayer *midi_player;
+struct ADLMIDI_AudioFormat adl_audio_format = {
     ADLMIDI_SampleType_S16,
     sizeof(ADL_SInt16),
     sizeof(ADL_SInt16) * 2,
 };
-static AudioStream midi_stream;
+AudioStream midi_stream;
 
 void callback(void *buffer, unsigned int frames) {
     adl_playFormat(midi_player, frames * 2, (ADL_UInt8 *)buffer,
@@ -30,6 +30,7 @@ int audio_init(void) {
     adl_switchEmulator(midi_player, ADLMIDI_EMU_NUKED);
     adl_setNumChips(midi_player, 2);
     adl_setBank(midi_player, 74);
+    adl_setVolumeRangeModel(midi_player, ADLMIDI_VolumeModel_AUTO);
 
     InitAudioDevice();
     SetAudioStreamBufferSizeDefault(MAX_SAMPLES_PER_UPDATE);
@@ -51,8 +52,7 @@ int audio_shutdown(void) {
 int play_midi_from_file(const char *path, bool loop) {
     adl_setLoopEnabled(midi_player, loop);
 
-    if (adl_openFile(midi_player, path) < 0)
-    {
+    if (adl_openFile(midi_player, path) < 0) {
         fprintf(stderr, "Couldn't open music file: %s\n", adl_errorInfo(midi_player));
         return 1;
     }

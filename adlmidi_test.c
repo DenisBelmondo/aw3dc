@@ -5,8 +5,8 @@
 
 #define MAX_SAMPLES_PER_UPDATE 4096
 
-static struct ADL_MIDIPlayer *midi_player;
-static struct ADLMIDI_AudioFormat adl_audio_format = {
+struct ADL_MIDIPlayer *midi_player;
+struct ADLMIDI_AudioFormat adl_audio_format = {
     ADLMIDI_SampleType_S16,
     sizeof(ADL_SInt16),
     sizeof(ADL_SInt16) * 2,
