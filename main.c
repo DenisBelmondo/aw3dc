@@ -103,7 +103,7 @@ int main(void) {
         goto close_window;
     }
 
-    err = play_midi_from_file("dd2-mission5.mid", true);
+    err = play_midi_from_file("music/Jewel_Master_-_Now_You_Are_Gone.mid", true);
 
     if (err) {
         goto close_window;
