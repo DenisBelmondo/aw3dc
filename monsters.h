@@ -8,7 +8,7 @@
 extern const Thinker THINKER_GUARD;
 
 void guard_init(Ent*);
-void guard_think(void*, double);
-void guard_draw(Camera3D, void*, double);
+void guard_tick(Ent*, double);
+void guard_draw(Camera3D, Ent*, double);
 
 #endif /* MONSTERS_H */

@@ -1,16 +1,11 @@
 #include "ent.h"
 #include "player.h"
 #include "util.h"
+#include "world.h"
 
-const float COL_MARGIN = 0.01;
+const float COL_MARGIN = 0.01F;
 
-const Thinker THINKER_PLAYER = {
-    player_tick, // tick
-};
-
-void player_tick(void *data, double delta) {
-    Ent *self = (Ent *)data;
-
+void player_tick(Ent *self, double delta) {
     (void)delta;
 
     float forward_axis = IsKeyDown(KEY_W) - IsKeyDown(KEY_S);
@@ -35,15 +30,18 @@ void player_tick(void *data, double delta) {
     Vector2 move_vec = Vector2Subtract(pos_new, pos_prev);
 
     self->xform.pos.x = pos_new.x;
-    if (tile_map_get(*self->tile_map, self->xform.pos.x, self->xform.pos.y)) {
+
+    if (tile_map_get(*self->world->tile_map, self->xform.pos.x, self->xform.pos.y)) {
         if (move_vec.x > 0) {
             self->xform.pos.x = (int)self->xform.pos.x - COL_MARGIN;
         } else if (move_vec.x < 0) {
             self->xform.pos.x = (int)self->xform.pos.x + 1 + COL_MARGIN;
         }
     }
+
     self->xform.pos.y = pos_new.y;
-    if (tile_map_get(*self->tile_map, self->xform.pos.x, self->xform.pos.y)) {
+
+    if (tile_map_get(*self->world->tile_map, self->xform.pos.x, self->xform.pos.y)) {
         if (move_vec.y > 0) {
             self->xform.pos.y = (int)self->xform.pos.y - COL_MARGIN;
         } else if (move_vec.y < 0) {

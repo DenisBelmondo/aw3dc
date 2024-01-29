@@ -1,18 +1,15 @@
 #include <raylib.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include "audio.h"
 #include "ent.h"
 #include "monsters.h"
 #include "player.h"
 #include "res_man.h"
 #include "tile_map.h"
+#include "world.h"
 
 // engine
 const double TICK_RATE = 1.0 / 30.0;
-Model wall_model;
-Image wall_image;
-Texture wall_texture;
-Material wall_material;
 Image gun_image;
 Texture gun_texture;
 const Color COLOR_CEILING = {57, 57, 57, 255};
@@ -47,44 +44,7 @@ TileMap tile_map = {
     20, // pitch
 };
 
-Ent *head;
-
-// render
-Camera3D cam = {
-    {0},                // pos
-    {1, 0, 0},          // target
-    {0, 1, 0},          // up
-    90.0F,              // fovy
-    CAMERA_PERSPECTIVE, // projection
-};
-
-void tick(double delta) {
-    for (Ent *ent = head; ent; ent = ent->next) {
-        if (ent->thinker.tick) {
-            ent->thinker.tick(ent, delta);
-        }
-    }
-}
-
-void shutdown(void) {
-    Ent *ent = head;
-
-    if (!ent) {
-        return;
-    }
-
-    while (true) {
-        Ent *next = ent->next;
-
-        free(ent);
-
-        if (!next) {
-            break;
-        }
-
-        ent = ent->next;
-    }
-}
+World world;
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -110,11 +70,10 @@ int main(void) {
         goto close_window;
     }
 
-    wall_model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
-    wall_image = LoadImage("0.png");
-    ImageFlipVertical(&wall_image);
-    wall_texture = LoadTextureFromImage(wall_image);
-    wall_model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = wall_texture;
+    world_init(&world);
+
+    world.tile_map = &tile_map;
+
     gun_image = LoadImage("walther.png");
     gun_texture = LoadTextureFromImage(gun_image);
 
@@ -122,17 +81,29 @@ int main(void) {
     // world init
     //
 
-    head = calloc(1, sizeof(Ent));
-    head->thinker = THINKER_PLAYER;
-    head->rad = 0.5F;
-    head->xform.pos = (Vector2){5, 5};
-    head->tile_map = &tile_map;
+    Ent player;
+    player.tick = player_tick;
+    player.draw = NULL;
+    player.rad = 0.5F;
+    player.xform.yaw = 0;
+    player.xform.pos = (Vector2){5, 5};
 
-    Ent *guard = calloc(1, sizeof(Ent));
-    guard_init(guard);
-    guard->xform.pos = (Vector2){4, 4};
-    guard->tile_map = &tile_map;
-    head->next = guard;
+    size_t player_handle = world_spawn_ent(&world, player);
+    world_attach_camera(&world, player_handle);
+
+    Ent guard;
+
+    guard.tick = guard_tick;
+    guard.draw = guard_draw;
+    guard.xform.yaw = 0;
+    guard.xform.pos = (Vector2){4, 4};
+    world_spawn_ent(&world, guard);
+
+    PSprite pistol;
+
+    pistol.tick = psprite_pistol_tick;
+    pistol.draw = NULL;
+    world.psprite = pistol;
 
     //
     // game loop
@@ -149,35 +120,17 @@ int main(void) {
         lag += elapsed;
 
         while (lag >= TICK_RATE) {
-            tick(TICK_RATE);
+            world_tick(&world, TICK_RATE);
             lag -= TICK_RATE;
         }
 
         ClearBackground(BLACK);
 
-        Vector2 ent_dir = get_dir(head->xform);
-
-        cam.position = (Vector3){head->xform.pos.x, 0, head->xform.pos.y};
-        cam.target = Vector3Add(cam.position, (Vector3){ent_dir.x, 0, ent_dir.y});
-
         BeginDrawing();
             DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight() / 2, COLOR_CEILING);
             DrawRectangle(0, GetRenderHeight() / 2, GetRenderWidth(), GetRenderHeight() / 2, COLOR_FLOOR);
-            BeginMode3D(cam);
-                for (int y = 0; y < tile_map.pitch; y++) {
-                    for (int x = 0; x < tile_map.pitch; x++) {
-                        if (tile_map_get(tile_map, x, y)) {
-                            // DrawCubeV((Vector3){x + 0.5F, 0, y + 0.5F}, (Vector3){1, 1, 1}, DARKBLUE);
-                            DrawModel(wall_model, (Vector3){x + 0.5F, 0, y + 0.5F}, 1, WHITE);
-                        }
-                    }
-                }
-
-                for (Ent *ent = head; ent; ent = ent->next) {
-                    if (ent->drawer.draw) {
-                        ent->drawer.draw(cam, ent, elapsed);
-                    }
-                }
+            BeginMode3D(world.cam);
+                world_draw(&world, elapsed);
             EndMode3D();
             float gun_texture_scale = (float)GetRenderHeight() / gun_image.height;
             static const int gun_frame_width = 64;
@@ -187,9 +140,6 @@ int main(void) {
         EndDrawing();
     }
 
-    UnloadMaterial(wall_material);
-    UnloadTexture(wall_texture);
-    UnloadImage(wall_image);
     UnloadTexture(gun_texture);
     UnloadImage(gun_image);
 
@@ -197,7 +147,7 @@ int main(void) {
 
 close_window:
     CloseWindow();
-    shutdown();
+    world_shutdown(&world);
 
     return 0;
 }
