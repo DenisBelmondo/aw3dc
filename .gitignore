@@ -8,3 +8,5 @@
 !*.txt
 compile_flags.txt
 !music/
+!wall.frag
+!wall.vert
