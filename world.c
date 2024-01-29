@@ -2,6 +2,9 @@
 #include "res_man.h"
 #include "world.h"
 
+const Color COLOR_CEILING = {57, 57, 57, 255};
+const Color COLOR_FLOOR = {115, 115, 115, 255};
+
 void world_init(World *world) {
     *world = (World){0};
 
@@ -13,7 +16,7 @@ void world_init(World *world) {
         CAMERA_PERSPECTIVE, // projection
     };
 
-    world->entities = malloc(sizeof(Ent) * 10);
+    world->entities = malloc(sizeof(Ent) * 127);
 }
 
 void world_tick(World *world, double delta) {
@@ -33,6 +36,11 @@ void world_draw(World *world, double delta) {
     Vector2 ent_pos = ent.xform.pos;
     Vector2 ent_dir = get_dir(ent.xform);
 
+    DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight() / 2, COLOR_CEILING);
+    DrawRectangle(0, GetRenderHeight() / 2, GetRenderWidth(), GetRenderHeight() / 2, COLOR_FLOOR);
+
+    BeginMode3D(world->cam);
+
     world->cam.position = (Vector3){ent_pos.x, 0, ent_pos.y};
     world->cam.target = Vector3Add(world->cam.position, (Vector3){ent_dir.x, 0, ent_dir.y});
 
@@ -49,6 +57,12 @@ void world_draw(World *world, double delta) {
         if (world->entities[i].draw) {
             world->entities[i].draw(world->cam, &world->entities[i], delta);
         }
+    }
+
+    EndMode3D();
+
+    if (world->psprite.draw) {
+        world->psprite.draw(&world->psprite, delta);
     }
 }
 

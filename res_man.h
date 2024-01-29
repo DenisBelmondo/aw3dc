@@ -6,6 +6,7 @@
 typedef enum ResManImages {
     RES_MAN_IMG_WALL_0,
     RES_MAN_IMG_GUARD,
+    RES_MAN_IMG_WALTHER,
     RES_MAN_NUM_IMG,
 } ResManImages;
 

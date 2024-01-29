@@ -4,6 +4,7 @@
 const char *RES_MAN_IMG_PATHS[] = {
     "0.png",
     "pguard_s_1.png",
+    "walther.png",
 };
 
 Image RES_MAN_IMG[RES_MAN_NUM_IMG];

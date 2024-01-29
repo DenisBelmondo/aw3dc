@@ -10,10 +10,6 @@
 
 // engine
 const double TICK_RATE = 1.0 / 30.0;
-Image gun_image;
-Texture gun_texture;
-const Color COLOR_CEILING = {57, 57, 57, 255};
-const Color COLOR_FLOOR = {115, 115, 115, 255};
 
 // game
 
@@ -64,18 +60,11 @@ int main(void) {
         goto close_window;
     }
 
-    err = play_midi_from_file("music/MAJMIN.wlf", true);
-
-    if (err) {
-        goto close_window;
-    }
+    play_midi_from_file("music/SHARDS.mid", true);
 
     world_init(&world);
 
     world.tile_map = &tile_map;
-
-    gun_image = LoadImage("walther.png");
-    gun_texture = LoadTextureFromImage(gun_image);
 
     //
     // world init
@@ -102,7 +91,7 @@ int main(void) {
     PSprite pistol;
 
     pistol.tick = psprite_pistol_tick;
-    pistol.draw = NULL;
+    pistol.draw = psprite_pistol_draw;
     world.psprite = pistol;
 
     //
@@ -127,21 +116,9 @@ int main(void) {
         ClearBackground(BLACK);
 
         BeginDrawing();
-            DrawRectangle(0, 0, GetRenderWidth(), GetRenderHeight() / 2, COLOR_CEILING);
-            DrawRectangle(0, GetRenderHeight() / 2, GetRenderWidth(), GetRenderHeight() / 2, COLOR_FLOOR);
-            BeginMode3D(world.cam);
-                world_draw(&world, elapsed);
-            EndMode3D();
-            float gun_texture_scale = (float)GetRenderHeight() / gun_image.height;
-            static const int gun_frame_width = 64;
-            static const int gun_frame_height = 64;
-            static const int gun_frame_idx = 0;
-            DrawTexturePro(gun_texture, (Rectangle){gun_frame_idx * gun_frame_width, 0, gun_frame_width, gun_frame_height}, (Rectangle){(float)GetRenderWidth() / 2 - gun_frame_width * gun_texture_scale / 2.0F, 0, GetRenderHeight(), GetRenderHeight()}, (Vector2){0}, 0, WHITE);
+            world_draw(&world, elapsed);
         EndDrawing();
     }
-
-    UnloadTexture(gun_texture);
-    UnloadImage(gun_image);
 
     audio_shutdown();
 
