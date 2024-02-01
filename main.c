@@ -44,7 +44,7 @@ World world;
 
 int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(640, 480, "Wolf3D");
+    InitWindow(1152, 720, "Wolf3D");
 
     int err = 0;
 
@@ -60,7 +60,7 @@ int main(void) {
         goto close_window;
     }
 
-    play_midi_from_file("music/SHARDS.mid", true);
+    play_midi_from_file("music/MAJMIN.wlf", true);
 
     world_init(&world);
 
